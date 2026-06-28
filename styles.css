@@ -1,0 +1,239 @@
+:root {
+  --black: #000;
+  --gold: 218 177 103;
+  --blue: 109 168 209;
+  --white: 242 244 247;
+  --mx: 50vw;
+  --my: 50vh;
+  --glow: 0;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+  background: var(--black);
+  overflow: hidden;
+  color: rgb(var(--white));
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  min-height: 100svh;
+  cursor: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+.stage {
+  position: relative;
+  isolation: isolate;
+  width: 100vw;
+  height: 100svh;
+  min-height: 620px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(var(--blue) / .08), transparent 32%),
+    radial-gradient(circle at 50% 62%, rgba(var(--gold) / .08), transparent 24%),
+    linear-gradient(180deg, #030304 0%, #000 55%, #020203 100%);
+}
+
+.hero-picture {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.hero-image {
+  width: min(100vw, calc(100svh * 1.777));
+  height: min(100svh, calc(100vw / 1.777));
+  max-width: none;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 0 calc(10px + var(--glow) * 28px) rgba(var(--gold) / calc(.10 + var(--glow) * .45)))
+    drop-shadow(0 0 calc(8px + var(--glow) * 20px) rgba(var(--blue) / calc(.08 + var(--glow) * .22)));
+  transform: scale(calc(1 + var(--glow) * .006));
+  transition: filter .28s ease, transform .28s ease;
+  user-select: none;
+}
+
+.aura {
+  position: absolute;
+  inset: -20vmax;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at var(--mx) var(--my), rgba(var(--gold) / .10), transparent 22vmax),
+    radial-gradient(circle at calc(100vw - var(--mx)) calc(100vh - var(--my)), rgba(var(--blue) / .07), transparent 25vmax);
+  opacity: calc(.45 + var(--glow) * .4);
+  transition: opacity .2s ease;
+  animation: slow-breath 9s ease-in-out infinite alternate;
+}
+
+.noise {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: .075;
+  background-image:
+    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: radial-gradient(circle at 50% 50%, #000 0%, transparent 70%);
+}
+
+.cursor-light {
+  position: absolute;
+  left: var(--mx);
+  top: var(--my);
+  width: 220px;
+  height: 220px;
+  translate: -50% -50%;
+  z-index: 4;
+  border-radius: 999px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, rgba(255,226,164,.24) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(var(--gold) / .18), rgba(var(--blue) / .08) 35%, transparent 66%);
+  box-shadow: 0 0 30px rgba(var(--gold) / .18), 0 0 60px rgba(var(--blue) / .08);
+  opacity: calc(.25 + var(--glow) * .75);
+  transform: scale(calc(.66 + var(--glow) * .35));
+  transition: opacity .12s ease, transform .12s ease;
+}
+
+.sound-orbit {
+  position: absolute;
+  left: 50%;
+  top: 57%;
+  width: min(68vw, 830px);
+  aspect-ratio: 1 / .48;
+  translate: -50% -50%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: calc(.22 + var(--glow) * .55);
+  filter: blur(.1px);
+}
+
+.sound-orbit span {
+  --angle: calc(var(--i) * 45deg);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgb(var(--gold)), rgba(var(--gold) / .25) 42%, transparent 70%);
+  box-shadow: 0 0 20px rgba(var(--gold) / .5), 0 0 34px rgba(var(--blue) / .22);
+  transform:
+    rotate(var(--angle))
+    translateX(calc(min(34vw, 410px)))
+    scale(calc(.65 + var(--glow) * .9));
+  animation: pulse 2.5s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -.18s);
+}
+
+.montevideo-flag {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(25px, 4.35vh, 48px);
+  z-index: 5;
+  width: clamp(42px, 3.6vw, 58px);
+  height: clamp(29px, 2.5vw, 40px);
+  translate: -50% 0;
+  border-radius: 7px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #fbfbfb, #e9edf2);
+  border: 1px solid rgba(255,255,255,.72);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.65),
+    0 0 20px rgba(var(--gold) / .22),
+    0 0 34px rgba(var(--blue) / .14);
+}
+
+.flag-cross {
+  position: absolute;
+  left: -10%;
+  top: 50%;
+  width: 120%;
+  height: 3px;
+  background: #bf2332;
+  transform-origin: center;
+  opacity: .95;
+}
+
+.flag-cross-a { transform: rotate(33deg); }
+.flag-cross-b { transform: rotate(-33deg); }
+
+.flag-tower {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 9px;
+  translate: -50% -45%;
+  background: #bf2332;
+  clip-path: polygon(0 100%, 0 38%, 18% 38%, 18% 12%, 36% 12%, 36% 38%, 50% 38%, 50% 12%, 68% 12%, 68% 38%, 82% 38%, 82% 12%, 100% 12%, 100% 100%);
+  box-shadow: 0 0 8px rgba(191,35,50,.42);
+}
+
+.ripple {
+  position: fixed;
+  left: var(--x);
+  top: var(--y);
+  z-index: 6;
+  width: 16px;
+  height: 16px;
+  translate: -50% -50%;
+  border-radius: 999px;
+  pointer-events: none;
+  border: 1px solid rgba(var(--gold) / .72);
+  box-shadow: 0 0 18px rgba(var(--gold) / .32), inset 0 0 14px rgba(var(--blue) / .16);
+  animation: ripple .92s ease-out forwards;
+}
+
+@keyframes ripple {
+  0% { opacity: .94; transform: scale(.25); }
+  100% { opacity: 0; transform: scale(11); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: .35; }
+  50% { opacity: 1; }
+}
+
+@keyframes slow-breath {
+  0% { transform: rotate(0deg) scale(1); }
+  100% { transform: rotate(.6deg) scale(1.04); }
+}
+
+@media (max-aspect-ratio: 11 / 10) {
+  .stage { min-height: 100svh; }
+  .hero-image {
+    width: 142vw;
+    height: auto;
+  }
+  .montevideo-flag {
+    bottom: 9.1vh;
+  }
+  .sound-orbit {
+    width: 100vw;
+    top: 56%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
