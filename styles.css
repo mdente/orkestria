@@ -152,33 +152,6 @@ body {
   animation-delay: calc(var(--i) * -.18s);
 }
 
-.uruguay-flag-wrap {
-  position: absolute;
-  left: 50%;
-  bottom: clamp(24px, 4.35vh, 48px);
-  z-index: 8;
-  width: clamp(62px, 4.8vw, 82px);
-  height: auto;
-  translate: -50% 0;
-  padding: 3px;
-  border-radius: 10px;
-  background: rgba(3, 5, 8, .78);
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,.18),
-    0 0 24px rgba(var(--gold) / calc(.18 + var(--glow) * .22)),
-    0 0 42px rgba(var(--blue) / calc(.12 + var(--glow) * .22));
-  backdrop-filter: blur(5px);
-}
-
-.uruguay-flag {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 7px;
-  overflow: hidden;
-  filter: saturate(1.06) contrast(1.04);
-}
-
 .ripple {
   position: fixed;
   left: var(--x);
@@ -212,12 +185,12 @@ body {
 @media (max-aspect-ratio: 11 / 10) {
   .stage { min-height: 100svh; }
   .hero-image {
-    width: 142vw;
-    height: auto;
-  }
-  .uruguay-flag-wrap {
-    bottom: 7.6vh;
-    width: 74px;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: auto;
+    height: 100svh;
+    translate: -50% 0;
   }
   .sound-orbit {
     width: 100vw;

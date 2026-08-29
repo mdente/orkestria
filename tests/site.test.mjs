@@ -45,3 +45,20 @@ test('la imagen principal ofrece una variante WebP más liviana', async () => {
   assert.match(html, /<source srcset="assets\/orkestria-hero\.webp" type="image\/webp"/);
   assert.ok(webp.size < png.size, 'la variante WebP debe pesar menos que el PNG');
 });
+
+test('la bandera de Uruguay se muestra una sola vez dentro de la imagen principal', async () => {
+  const html = await readFile(new URL('index.html', root), 'utf8');
+
+  assert.doesNotMatch(html, /class="uruguay-flag-wrap"/);
+  assert.doesNotMatch(html, /class="uruguay-flag"/);
+});
+
+test('la composición principal ocupa la altura disponible en pantallas verticales', async () => {
+  const css = await readFile(new URL('styles.css', root), 'utf8');
+  const portraitRules = css.match(/@media \(max-aspect-ratio: 11 \/ 10\) \{([\s\S]*?)\n\}/)?.[1] ?? '';
+
+  assert.match(portraitRules, /\.hero-image\s*\{[\s\S]*?width:\s*auto;/);
+  assert.match(portraitRules, /\.hero-image\s*\{[\s\S]*?height:\s*100svh;/);
+  assert.match(portraitRules, /\.hero-image\s*\{[\s\S]*?left:\s*50%;/);
+  assert.match(portraitRules, /\.hero-image\s*\{[\s\S]*?translate:\s*-50% 0;/);
+});
