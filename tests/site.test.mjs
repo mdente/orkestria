@@ -54,9 +54,11 @@ test('la bandera de Uruguay se muestra una sola vez dentro de la imagen principa
 });
 
 test('la composición principal ocupa la altura disponible en pantallas verticales', async () => {
+  const html = await readFile(new URL('index.html', root), 'utf8');
   const css = await readFile(new URL('styles.css', root), 'utf8');
   const portraitRules = css.match(/@media \(max-aspect-ratio: 11 \/ 10\) \{([\s\S]*?)\n\}/)?.[1] ?? '';
 
+  assert.match(html, /href="styles\.css\?v=2"/);
   assert.match(portraitRules, /\.hero-image\s*\{[\s\S]*?width:\s*auto;/);
   assert.match(portraitRules, /\.hero-image\s*\{[\s\S]*?height:\s*100svh;/);
   assert.match(portraitRules, /\.hero-image\s*\{[\s\S]*?left:\s*50%;/);
