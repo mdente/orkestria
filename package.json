@@ -1,0 +1,7 @@
+{
+  "name": "orkestria-uy",
+  "private": true,
+  "scripts": {
+    "test": "node --test && node --check script.js"
+  }
+}
