@@ -64,3 +64,11 @@ test('la composición principal ocupa la altura disponible en pantallas vertical
   assert.match(portraitRules, /\.hero-image\s*\{[\s\S]*?left:\s*50%;/);
   assert.match(portraitRules, /\.hero-image\s*\{[\s\S]*?translate:\s*-50% 0;/);
 });
+
+test('la superficie musical funciona con clic, toque y teclado', async () => {
+  const html = await readFile(new URL('index.html', root), 'utf8');
+
+  assert.match(html, /<main[^>]+role="button"[^>]+tabindex="0"/);
+  assert.match(html, /id="music-status"[^>]+aria-live="polite"/);
+  assert.match(html, /<script type="module" src="script\.js\?v=3"><\/script>/);
+});

@@ -53,10 +53,12 @@
   </script>
 </head>
 <body>
-  <main class="stage" aria-labelledby="site-title">
+  <main class="stage" role="button" tabindex="0" aria-labelledby="site-title sound-instructions">
     <section class="sr-only">
       <h1 id="site-title">orkestria.uy</h1>
       <p>Orquestación tecnológica para TOTVS Protheus, inteligencia artificial, Python e integración de sistemas en Uruguay.</p>
+      <p id="sound-instructions">Haga clic, toque o presione Enter o Espacio para reproducir el próximo motivo musical.</p>
+      <p id="music-status" aria-live="polite"></p>
       <a href="tel:+59895221683">Llamar al 095 221 683</a>
     </section>
 
@@ -81,6 +83,6 @@
     </div>
   </main>
 
-  <script src="script.js" defer></script>
+  <script type="module" src="script.js?v=3"></script>
 </body>
 </html>

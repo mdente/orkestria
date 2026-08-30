@@ -1,149 +1,108 @@
+import { buildTimeline, getMotif } from './music.js?v=1';
+
 (() => {
   const root = document.documentElement;
+  const stage = document.querySelector('.stage');
+  const musicStatus = document.querySelector('#music-status');
   let audioContext = null;
   let master = null;
-  let unlocked = false;
-  let lastSoundAt = 0;
-  let lastInstrument = -1;
+  let motifIndex = 0;
   let lastRippleAt = 0;
 
-  const instruments = [
-    { name: 'strings', wave: 'sawtooth', attack: 0.018, release: 0.78, gain: 0.035, filter: 1500, chord: [0, 7, 12] },
-    { name: 'cello', wave: 'sawtooth', attack: 0.03, release: 1.05, gain: 0.042, filter: 620, chord: [-12, -5, 0] },
-    { name: 'flute', wave: 'sine', attack: 0.012, release: 0.62, gain: 0.034, filter: 2400, chord: [0, 12] },
-    { name: 'brass', wave: 'square', attack: 0.035, release: 0.7, gain: 0.029, filter: 920, chord: [0, 4, 7] },
-    { name: 'harp', wave: 'triangle', attack: 0.003, release: 0.5, gain: 0.045, filter: 3600, chord: [0, 7, 14, 19] },
-    { name: 'clarinet', wave: 'triangle', attack: 0.02, release: 0.72, gain: 0.032, filter: 1300, chord: [0, 5, 12] },
-    { name: 'choir', wave: 'sine', attack: 0.08, release: 1.25, gain: 0.025, filter: 1700, chord: [0, 7, 12, 16] },
-    { name: 'timpani', wave: 'sine', attack: 0.002, release: 0.55, gain: 0.065, filter: 420, chord: [-24] }
-  ];
+  const instruments = {
+    strings: { wave: 'sawtooth', attack: .026, release: .62, gain: .03, filter: 1450 },
+    brass: { wave: 'square', attack: .025, release: .46, gain: .025, filter: 980 },
+    harp: { wave: 'triangle', attack: .004, release: .44, gain: .04, filter: 3400 },
+    lead: { wave: 'sawtooth', attack: .008, release: .2, gain: .028, filter: 1750 }
+  };
 
-  const scale = [196, 220, 246.94, 261.63, 293.66, 329.63, 392, 440, 493.88, 523.25];
+  function midiToFrequency(midi) {
+    return 440 * Math.pow(2, (midi - 69) / 12);
+  }
 
-  function unlockAudio() {
-    if (unlocked) return;
+  function prepareAudio() {
+    if (audioContext) return true;
 
-    audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) {
+      musicStatus.textContent = 'El audio no está disponible en este navegador.';
+      return false;
+    }
+
+    audioContext = new AudioContextClass();
     master = audioContext.createGain();
-    master.gain.value = 0.72;
+    master.gain.value = .68;
 
     const compressor = audioContext.createDynamicsCompressor();
-    compressor.threshold.value = -28;
-    compressor.knee.value = 22;
-    compressor.ratio.value = 8;
-    compressor.attack.value = 0.006;
-    compressor.release.value = 0.18;
+    compressor.threshold.value = -26;
+    compressor.knee.value = 20;
+    compressor.ratio.value = 7;
+    compressor.attack.value = .006;
+    compressor.release.value = .2;
 
     master.connect(compressor);
     compressor.connect(audioContext.destination);
-
-    audioContext.resume().then(() => {
-      unlocked = true;
-      playGesture(window.innerWidth / 2, window.innerHeight / 2, true);
-    }).catch(() => {});
+    return true;
   }
 
-  function midiToFrequency(base, semitones) {
-    return base * Math.pow(2, semitones / 12);
+  async function unlockAudio() {
+    if (!prepareAudio()) return false;
+
+    try {
+      await audioContext.resume();
+      root.style.setProperty('--glow', '1');
+      return audioContext.state === 'running';
+    } catch {
+      musicStatus.textContent = 'No fue posible iniciar el audio.';
+      return false;
+    }
   }
 
-  function createTone(freq, instrument, start, duration, detune = 0) {
-    const osc = audioContext.createOscillator();
+  function createTone(note, instrument, start, index) {
+    const oscillator = audioContext.createOscillator();
     const gain = audioContext.createGain();
     const filter = audioContext.createBiquadFilter();
-    const pan = audioContext.createStereoPanner();
+    const noteStart = start + note.start;
+    const noteGain = Math.max(.0001, instrument.gain * note.velocity);
 
-    osc.type = instrument.wave;
-    osc.frequency.setValueAtTime(freq, start);
-    osc.detune.setValueAtTime(detune, start);
-
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(instrument.filter, start);
-    filter.Q.setValueAtTime(instrument.name === 'brass' ? 6 : 1.2, start);
-
-    gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(instrument.gain, start + instrument.attack);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration + instrument.release);
-
-    pan.pan.value = Math.max(-0.85, Math.min(0.85, (Math.random() - 0.5) * 1.2));
-
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(pan);
-    pan.connect(master);
-
-    osc.start(start);
-    osc.stop(start + duration + instrument.release + 0.04);
-  }
-
-  function playTimpani(base, start) {
-    const instrument = instruments[7];
-    const osc = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    const filter = audioContext.createBiquadFilter();
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(base / 2, start);
-    osc.frequency.exponentialRampToValueAtTime(base / 4, start + 0.32);
+    oscillator.type = instrument.wave;
+    oscillator.frequency.setValueAtTime(midiToFrequency(note.midi), noteStart);
 
     filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(instrument.filter, start);
+    filter.frequency.setValueAtTime(instrument.filter, noteStart);
+    filter.Q.setValueAtTime(instrument.wave === 'square' ? 4.5 : 1.1, noteStart);
 
-    gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(instrument.gain, start + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.62);
+    gain.gain.setValueAtTime(.0001, noteStart);
+    gain.gain.exponentialRampToValueAtTime(noteGain, noteStart + instrument.attack);
+    gain.gain.exponentialRampToValueAtTime(.0001, noteStart + note.duration + instrument.release);
 
-    osc.connect(filter);
+    oscillator.connect(filter);
     filter.connect(gain);
-    gain.connect(master);
 
-    osc.start(start);
-    osc.stop(start + 0.68);
-  }
-
-  function instrumentFromPoint(x, y) {
-    const nx = x / window.innerWidth;
-    const ny = y / window.innerHeight;
-
-    if (ny > 0.72) return 4;
-    if (ny < 0.28) return 6;
-    if (nx < 0.18) return 2;
-    if (nx > 0.82) return 3;
-    if (ny > 0.58 && nx < 0.5) return 1;
-    if (ny > 0.58 && nx >= 0.5) return 7;
-
-    return Math.floor(nx * 5) % 5;
-  }
-
-  function playGesture(x, y, intro = false) {
-    if (!unlocked || !audioContext) return;
-
-    const nowMs = performance.now();
-    if (!intro && nowMs - lastSoundAt < 260) return;
-
-    const instrumentIndex = instrumentFromPoint(x, y);
-    if (!intro && instrumentIndex === lastInstrument && nowMs - lastSoundAt < 640) return;
-
-    lastSoundAt = nowMs;
-    lastInstrument = instrumentIndex;
-
-    const instrument = instruments[instrumentIndex];
-    const start = audioContext.currentTime + 0.004;
-    const nx = x / window.innerWidth;
-    const ny = y / window.innerHeight;
-    const base = scale[Math.floor((nx * scale.length + ny * 3) % scale.length)];
-    const duration = intro ? 0.36 : 0.14 + (1 - ny) * 0.18;
-
-    if (instrument.name === 'timpani') {
-      playTimpani(base, start);
-      return;
+    if (typeof audioContext.createStereoPanner === 'function') {
+      const pan = audioContext.createStereoPanner();
+      pan.pan.value = index % 2 === 0 ? -.18 : .18;
+      gain.connect(pan);
+      pan.connect(master);
+    } else {
+      gain.connect(master);
     }
 
-    instrument.chord.forEach((semi, index) => {
-      const delay = instrument.name === 'harp' ? index * 0.045 : index * 0.012;
-      const detune = instrument.name === 'strings' ? (index - 1) * 5 : 0;
-      createTone(midiToFrequency(base, semi), instrument, start + delay, duration, detune);
-    });
+    oscillator.start(noteStart);
+    oscillator.stop(noteStart + note.duration + instrument.release + .04);
+  }
+
+  async function playNextMotif() {
+    if (!await unlockAudio()) return;
+
+    const motif = getMotif(motifIndex);
+    const instrument = instruments[motif.instrument];
+    const start = audioContext.currentTime + .035;
+
+    buildTimeline(motif).forEach((note, index) => createTone(note, instrument, start, index));
+    musicStatus.textContent = `Reproduciendo ${motif.title}.`;
+    stage.dataset.motif = motif.id;
+    motifIndex += 1;
   }
 
   function addRipple(x, y) {
@@ -165,20 +124,20 @@
 
     root.style.setProperty('--mx', `${x}px`);
     root.style.setProperty('--my', `${y}px`);
-    root.style.setProperty('--glow', unlocked ? '1' : '.62');
-
+    root.style.setProperty('--glow', audioContext?.state === 'running' ? '1' : '.62');
     addRipple(x, y);
-    playGesture(x, y);
   }
 
-  window.addEventListener('pointerdown', unlockAudio, { passive: true });
-  window.addEventListener('click', unlockAudio, { passive: true });
-  window.addEventListener('keydown', unlockAudio, { passive: true });
+  stage.addEventListener('click', playNextMotif);
+  stage.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    playNextMotif();
+  });
   window.addEventListener('pointermove', updateLight, { passive: true });
   window.addEventListener('pointerenter', updateLight, { passive: true });
   window.addEventListener('blur', () => {
-    if (audioContext && audioContext.state === 'running') audioContext.suspend();
-    unlocked = false;
+    if (audioContext?.state === 'running') audioContext.suspend();
     root.style.setProperty('--glow', '0');
   });
 })();

@@ -1,7 +1,8 @@
 {
   "name": "orkestria-uy",
   "private": true,
+  "type": "module",
   "scripts": {
-    "test": "node --test && node --check script.js"
+    "test": "node --test && node --check script.js && node --check music.js"
   }
 }

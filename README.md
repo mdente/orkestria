@@ -25,9 +25,9 @@ npm test
 
 La prueba valida el dominio personalizado, las rutas de los activos y los metadatos esenciales antes de publicar.
 
-## Observação sobre som
+## Interacción musical
 
-Os navegadores só liberam áudio depois da primeira interação do usuário. Clique ou toque uma vez na página e depois mova o mouse para ativar os sons orquestrais.
+Cada clic, toque o activación por teclado reproduce el siguiente motivo. La secuencia alterna fragmentos de obras clásicas de dominio público —Beethoven, Mozart y Bach— con riffs originales de blues-rock. Los navegadores habilitan el audio después de la primera interacción del usuario.
 
 ## SEO
 
